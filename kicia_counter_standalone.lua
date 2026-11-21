@@ -100,10 +100,10 @@ do
         end
     end)
     hudFrame.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end
     end)
     UIS.InputChanged:Connect(function(i)
-        if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
             local d = i.Position - dragStart
             hudFrame.Position = UDim2.new(
                 startPos.X.Scale, startPos.X.Offset + d.X,
@@ -151,10 +151,18 @@ titleLbl.TextColor3           = Color3.fromRGB(200, 185, 255)
 titleLbl.TextXAlignment       = Enum.TextXAlignment.Left
 titleLbl.Text                 = "⚡ KICIA COUNTER"
 
--- right-click HUD to toggle panel
+-- TAP / click HUD to toggle panel (mobile touch + PC left click both work)
+local lastTap = 0
 hudFrame.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton2 then
-        panel.Visible = not panel.Visible
+    if i.UserInputType == Enum.UserInputType.Touch
+    or i.UserInputType == Enum.UserInputType.MouseButton1
+    or i.UserInputType == Enum.UserInputType.MouseButton2 then
+        local now = tick()
+        -- debounce 0.2s so drag doesn't flicker the panel
+        if now - lastTap > 0.2 then
+            lastTap = now
+            panel.Visible = not panel.Visible
+        end
     end
 end)
 
@@ -167,10 +175,10 @@ do
         end
     end)
     titleBar.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end
     end)
     UIS.InputChanged:Connect(function(i)
-        if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
             local d = i.Position - dragStart
             panel.Position = UDim2.new(
                 startPos.X.Scale, startPos.X.Offset + d.X,
@@ -255,7 +263,7 @@ local function makeToggle(parent, label, default, order, callback)
     end
 
     row.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 then setState(not state) end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then setState(not state) end
     end)
     return row, setState
 end
@@ -308,13 +316,13 @@ local function makeSlider(parent, label, min, max, default, rounding, order, cal
         setVal(min + (max - min) * pct)
     end
     track.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; onInput(i) end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = true; onInput(i) end
     end)
     track.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end
     end)
     UIS.InputChanged:Connect(function(i)
-        if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then onInput(i) end
+        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then onInput(i) end
     end)
     return row
 end
@@ -438,7 +446,7 @@ hint.Font                  = Enum.Font.Gotham
 hint.TextSize              = 10
 hint.TextColor3            = Color3.fromRGB(100, 90, 130)
 hint.TextWrapped           = true
-hint.Text                  = "Right-click HUD to toggle panel"
+hint.Text                  = "Tap the HUD bar to open/close panel"
 hint.LayoutOrder           = 22
 
 -- ----------------------------------------------------------------
@@ -603,4 +611,4 @@ getgenv()._KiciaCounterCleanup = function()
     getgenv()._KiciaCounterCleanup = nil
 end
 
-print("[Kicia Counter] standalone loaded ✓  right-click HUD to open panel")
+print("[Kicia Counter] standalone loaded ✓  tap HUD bar to open panel")
